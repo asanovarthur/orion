@@ -20,6 +20,9 @@ public class PlayerController : MonoBehaviour
     private bool _canAct = true;
     private bool _canHit = true;
 
+    private AudioSource _playerAudio;
+    [SerializeField] AudioClip HitSound;
+
     private Animator _animator;
 
     private void Awake()
@@ -33,6 +36,7 @@ public class PlayerController : MonoBehaviour
         _timeSinceHit += _hitAnimationTime;
 
         _animator = GetComponent<Animator>();
+        _playerAudio = GetComponent<AudioSource>();
     }
 
     void Update()
@@ -83,6 +87,7 @@ public class PlayerController : MonoBehaviour
         if (_canHit && !MoveButtonsPressed && Convert.ToBoolean(hitBtnPressed) && (_timeSinceHit > _hitAnimationTime))
         {
             _animator.SetTrigger("Punch_trig");
+            _playerAudio.PlayOneShot(HitSound);
             _timeSinceHit = 0;
             _canHit = false;
 
