@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 
 public class PlayerController : MonoBehaviour
 {
@@ -19,6 +20,13 @@ public class PlayerController : MonoBehaviour
 
     private bool _canAct = true;
     private bool _canHit = true;
+
+    private float _minAllowedX = -1.8f;
+    private float _minAllowedY = -0.8f;
+    private float _maxAllowedY = 0.25f;
+
+    // -1.05 - start X
+    // 0 - start Y
 
     private AudioSource _playerAudio;
     [SerializeField] AudioClip HitSound;
@@ -47,6 +55,39 @@ public class PlayerController : MonoBehaviour
         HandleHit();
     }
 
+    private void AdjustLookupDirection()
+    {
+        if (_horizontalInput > 0)
+            _scaleX = 1;
+        else if (_horizontalInput < 0)
+            _scaleX = -1;
+        else _scaleX = transform.localScale.x;
+        transform.localScale = new Vector3(_scaleX, transform.localScale.y, transform.localScale.z);
+    }
+
+    private bool IsInAllowedXArea => transform.position.x >= _minAllowedX;
+
+    private bool IsInAllowedYArea => transform.position.y >= _minAllowedY && transform.position.y <= _maxAllowedY;
+
+    private int CanMoveVertically()
+    {
+        if (transform.position.y >= _maxAllowedY && _verticalInput > 0)
+            return 0;
+
+        if (transform.position.y <= _minAllowedY && _verticalInput < 0)
+            return 0;
+
+        return 1;
+    }
+
+    private int CanMoveHorizontally()
+    {
+        if (transform.position.x <= _minAllowedX && _horizontalInput < 0)
+            return 0;
+
+        return 1;
+    }
+
     private void HandleMovement()
     {
         if (!_canAct) return;
@@ -56,17 +97,12 @@ public class PlayerController : MonoBehaviour
 
         _animator.SetFloat("Speed_f", _speed * Convert.ToInt16(MoveButtonsPressed));
 
-        if (_horizontalInput > 0)
-            _scaleX = 1;
-        else if (_horizontalInput < 0)
-            _scaleX = -1;
-        else _scaleX = transform.localScale.x;
-        transform.localScale = new Vector3(_scaleX, transform.localScale.y, transform.localScale.z);
+        AdjustLookupDirection();
 
         if (MoveButtonsPressed)
             transform.Translate(
-                _horizontalInput * _speed * Time.deltaTime,
-                _verticalInput * _speed * Time.deltaTime,
+                _horizontalInput * _speed * Time.deltaTime * CanMoveHorizontally(), 
+                _verticalInput * _speed * Time.deltaTime * CanMoveVertically(), 
                 transform.position.z
             );
     }
