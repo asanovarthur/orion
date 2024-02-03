@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UIElements;
 
 public class PlayerController : MonoBehaviour
 {
@@ -10,23 +9,25 @@ public class PlayerController : MonoBehaviour
     private InputAction _move;
     private InputAction _hit;
 
-    private float _horizontalInput;
+    [SerializeField] float _horizontalInput;
     private float _verticalInput;
 
-    private float _speed = 1f;
+    private readonly float _speed = 1f;
+    private readonly float _cameraMovingSpeedModifier = 5f;
+    private readonly float _cameraStoppedSpeedModifier = 0.8f;
     private float _scaleX = 1f;
     private float _timeSinceHit;
     private readonly float _hitAnimationTime = 0.375f;
 
     private bool _canAct = true;
     private bool _canHit = true;
+    private bool _cameraShouldMove;
 
-    private float _minAllowedX = -1.8f;
+    private readonly float _walkableAreaDistanceX = 3.2f;
     private float _minAllowedY = -0.8f;
     private float _maxAllowedY = 0.25f;
 
-    // -1.05 - start X
-    // 0 - start Y
+    private GameObject _camera;
 
     private AudioSource _playerAudio;
     [SerializeField] AudioClip HitSound;
@@ -45,6 +46,8 @@ public class PlayerController : MonoBehaviour
 
         _animator = GetComponent<Animator>();
         _playerAudio = GetComponent<AudioSource>();
+
+        _camera = GameObject.Find("Main Camera");
     }
 
     void Update()
@@ -65,10 +68,6 @@ public class PlayerController : MonoBehaviour
         transform.localScale = new Vector3(_scaleX, transform.localScale.y, transform.localScale.z);
     }
 
-    private bool IsInAllowedXArea => transform.position.x >= _minAllowedX;
-
-    private bool IsInAllowedYArea => transform.position.y >= _minAllowedY && transform.position.y <= _maxAllowedY;
-
     private int CanMoveVertically()
     {
         if (transform.position.y >= _maxAllowedY && _verticalInput > 0)
@@ -82,11 +81,12 @@ public class PlayerController : MonoBehaviour
 
     private int CanMoveHorizontally()
     {
-        if (transform.position.x <= _minAllowedX && _horizontalInput < 0)
-            return 0;
+        if (PositionLeftBound > transform.position.x && _horizontalInput < 0) return 0;
 
         return 1;
     }
+
+    private float PositionLeftBound => _camera.transform.position.x - (_walkableAreaDistanceX / 2);
 
     private void HandleMovement()
     {
@@ -99,13 +99,32 @@ public class PlayerController : MonoBehaviour
 
         AdjustLookupDirection();
 
+        _cameraShouldMove = _horizontalInput > 0 && _camera.GetComponent<MoveCamera>().CanMoveRight;
+
+        if (_cameraShouldMove)
+            _camera.GetComponent<MoveCamera>().MoveRight();
+
         if (MoveButtonsPressed)
             transform.Translate(
-                _horizontalInput * _speed * Time.deltaTime * CanMoveHorizontally(), 
-                _verticalInput * _speed * Time.deltaTime * CanMoveVertically(), 
+                _horizontalSpeed,
+                _verticalSpeed, 
                 transform.position.z
             );
     }
+
+    private float _horizontalSpeed =>
+        (_horizontalInput > 0 ? 1 : _horizontalInput) * // „тобы нивелировать разницу в скорости между горизонтальным движением и движением под углом
+        _speed *
+        (_cameraShouldMove ? _cameraMovingSpeedModifier : _cameraStoppedSpeedModifier) * //  огда движетс€ камера, визуально скорость меньше
+        Time.deltaTime *
+        CanMoveHorizontally();
+
+    private float _verticalSpeed =>
+        _verticalInput *
+        _speed *
+        _cameraStoppedSpeedModifier * //  амера никогда не движетс€ по вертикали
+        Time.deltaTime *
+        CanMoveVertically();
 
     private bool MoveButtonsPressed => _horizontalInput != 0 || _verticalInput != 0;
 
