@@ -9,7 +9,7 @@ public class PlayerController : MonoBehaviour
     private InputAction _move;
     private InputAction _hit;
 
-    [SerializeField] float _horizontalInput;
+    private float _horizontalInput;
     private float _verticalInput;
 
     private readonly float _speed = 1f;
