@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4352727589192601489}
   - component: {fileID: 7569839810770568589}
   - component: {fileID: -1335042829154780950}
+  - component: {fileID: 7270696461215069582}
   m_Layer: 0
   m_Name: EnemyPunk
   m_TagString: Enemy
@@ -97,3 +98,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6cfb5e21dd816494597e061f1d044040, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!95 &7270696461215069582
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5832318675296185698}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: bed2a9fe4efdf064db7ec6be76cadcf7, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
