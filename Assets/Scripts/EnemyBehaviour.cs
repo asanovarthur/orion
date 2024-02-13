@@ -5,13 +5,16 @@ public class EnemyBehaviour : MonoBehaviour
 {
     private GameObject _player;
 
-    private float _distanceToPlayer;
-    private float _speed = 1;
+    private Animator _animator;
+
+    private float _speed = 0.5f;
 
     // Start is called before the first frame update
     void Start()
     {
         _player = GameObject.Find("Player");
+
+        _animator = GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -22,7 +25,6 @@ public class EnemyBehaviour : MonoBehaviour
 
     private void FollowPlayer()
     {
-        _distanceToPlayer = Vector2.Distance(transform.position, _player.transform.position);
         // TODO: учесть разницу по оси Y
         // TODO: учесть близость героя с остальными врагами - не подходить, если уже есть кто-то рядом
 
@@ -34,7 +36,11 @@ public class EnemyBehaviour : MonoBehaviour
 
         var destination = distanceToLeft > distanceToRight ? positionRightToPlayer : positionLeftToPlayer;
 
-        if ((Math.Abs(transform.position.x - _player.transform.position.x) > 0.25f) || (Math.Abs(transform.position.y - _player.transform.position.y) > 0.05f)) {
+        bool shouldMove = (Math.Abs(transform.position.x - _player.transform.position.x) > 0.25f) || (Math.Abs(transform.position.y - _player.transform.position.y) > 0.05f);
+        
+        _animator.SetFloat("Speed_f", _speed * Convert.ToInt16(shouldMove));
+        
+        if (shouldMove) {
             transform.position = Vector2.MoveTowards(transform.position, destination, _speed * Time.deltaTime);
             transform.localScale = new Vector3(
                 transform.position.x < _player.transform.position.x ? -1 : 1,
@@ -47,7 +53,8 @@ public class EnemyBehaviour : MonoBehaviour
         }
     }
 
-    private void Hit() { 
+    private void Hit() {
         // TODO: проиграть анимацию удара; если попал - ударить еще раз; если не попал - FollowPlayer()
+        _animator.SetTrigger("Punch_trig");
     }
 }
