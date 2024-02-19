@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 public class EnemyBehaviour : MonoBehaviour
@@ -6,18 +7,36 @@ public class EnemyBehaviour : MonoBehaviour
     private GameObject _player;
 
     private Animator _animator;
+   
+    private AudioSource _enemyAudio;
+    private AudioClip _punchFlySound;
 
     private float _speed = 0.5f;
+    
+    private float _hitCooldownInSeconds = 2f;
+    private float _hurtDisabledTimeInSeconds = 1f; 
+    
+    private float _punchFlyVolume = 0.5f;
 
-    // Start is called before the first frame update
+    private float _sameLevelDistanceX = 0.3f;
+    private float _sameLevelDistanceY = 0.05f;
+    
+    private bool _canHit = true;
+    private bool _shouldPause;
+    private bool _canMove = true;
+
+    private int _hitCooldownCoroutineCalls;
+
     void Start()
     {
         _player = GameObject.Find("Player");
 
         _animator = GetComponent<Animator>();
+        _enemyAudio = GetComponent<AudioSource>();
+    
+        _punchFlySound = GetComponent<CharacterSounds>().PunchFlySound;
     }
 
-    // Update is called once per frame
     void Update()
     {
         FollowPlayer();
@@ -25,8 +44,8 @@ public class EnemyBehaviour : MonoBehaviour
 
     private void FollowPlayer()
     {
-        // TODO: учесть разницу по оси Y
-        // TODO: учесть близость героя с остальными врагами - не подходить, если уже есть кто-то рядом
+        // TODO: СѓС‡РµСЃС‚СЊ СЂР°Р·РЅРёС†Сѓ РїРѕ РѕСЃРё Y
+        // TODO: СѓС‡РµСЃС‚СЊ Р±Р»РёР·РѕСЃС‚СЊ РіРµСЂРѕСЏ СЃ РѕСЃС‚Р°Р»СЊРЅС‹РјРё РІСЂР°РіР°РјРё - РЅРµ РїРѕРґС…РѕРґРёС‚СЊ, РµСЃР»Рё СѓР¶Рµ РµСЃС‚СЊ РєС‚Рѕ-С‚Рѕ СЂСЏРґРѕРј
 
         var positionLeftToPlayer = new Vector2(_player.transform.position.x - 0.25f, _player.transform.position.y);
         var positionRightToPlayer = new Vector2(_player.transform.position.x + 0.25f, _player.transform.position.y);
@@ -36,11 +55,15 @@ public class EnemyBehaviour : MonoBehaviour
 
         var destination = distanceToLeft > distanceToRight ? positionRightToPlayer : positionLeftToPlayer;
 
-        bool shouldMove = (Math.Abs(transform.position.x - _player.transform.position.x) > 0.25f) || (Math.Abs(transform.position.y - _player.transform.position.y) > 0.05f);
+        bool shouldMove = (Math.Abs(transform.position.x - _player.transform.position.x) > _sameLevelDistanceX) || 
+            (Math.Abs(transform.position.y - _player.transform.position.y) > _sameLevelDistanceY);
         
-        _animator.SetFloat("Speed_f", _speed * Convert.ToInt16(shouldMove));
+        _animator.SetFloat("Speed_f", _speed * Convert.ToInt16(shouldMove && _canMove));
         
-        if (shouldMove) {
+        if (shouldMove && _canMove) {
+            if (_shouldPause)
+                PauseMovement();
+
             transform.position = Vector2.MoveTowards(transform.position, destination, _speed * Time.deltaTime);
             transform.localScale = new Vector3(
                 transform.position.x < _player.transform.position.x ? -1 : 1,
@@ -49,12 +72,40 @@ public class EnemyBehaviour : MonoBehaviour
                 );
         } else
         {
-            Hit();
+            _shouldPause = true;
+
+            if (!shouldMove && _canHit) 
+                Hit();
         }
     }
 
+    private void PauseMovement() {
+        StartCoroutine(PauseCoroutine(2f));
+    }
+
+    private IEnumerator PauseCoroutine(float time) {
+        _canMove = false;
+        yield return new WaitForSeconds(time);
+        _canMove = true;
+        _shouldPause = false;
+    }
+
     private void Hit() {
-        // TODO: проиграть анимацию удара; если попал - ударить еще раз; если не попал - FollowPlayer()
         _animator.SetTrigger("Punch_trig");
+        _enemyAudio.PlayOneShot(_punchFlySound, _punchFlyVolume);
+        StartCoroutine(HitCooldownCoroutine(_hitCooldownInSeconds));
+    }
+
+    public void GetHurt() {
+        StartCoroutine(HitCooldownCoroutine(_hurtDisabledTimeInSeconds));
+    }
+
+    public IEnumerator HitCooldownCoroutine(float timeInSeconds = 0) {
+        _hitCooldownCoroutineCalls++;
+        _canHit = false;
+        yield return new WaitForSeconds(timeInSeconds);
+        _hitCooldownCoroutineCalls--;
+        if (_hitCooldownCoroutineCalls == 0)
+            _canHit = true;
     }
 }

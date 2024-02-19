@@ -27,10 +27,12 @@ public class PlayerController : MonoBehaviour
     private float _minAllowedY = -0.8f;
     private float _maxAllowedY = 0.25f;
 
+    private float _punchFlyVolume = 0.5f;
+
     private GameObject _camera;
 
     private AudioSource _playerAudio;
-    [SerializeField] AudioClip HitSound;
+    private AudioClip _punchFlySound;
 
     private Animator _animator;
 
@@ -41,11 +43,13 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        // Чтобы можно было атаковать с самого начала игры, не дожидаясь несуществующего кулдауна
+        // Р§С‚РѕР±С‹ РјРѕР¶РЅРѕ Р±С‹Р»Рѕ Р°С‚Р°РєРѕРІР°С‚СЊ СЃ СЃР°РјРѕРіРѕ РЅР°С‡Р°Р»Р° РёРіСЂС‹, РЅРµ РґРѕР¶РёРґР°СЏСЃСЊ РЅРµСЃСѓС‰РµСЃС‚РІСѓСЋС‰РµРіРѕ РєСѓР»РґР°СѓРЅР°
         _timeSinceHit += _hitAnimationTime;
 
         _animator = GetComponent<Animator>();
         _playerAudio = GetComponent<AudioSource>();
+
+        _punchFlySound = GetComponent<CharacterSounds>().PunchFlySound;
 
         _camera = GameObject.Find("Main Camera");
     }
@@ -113,16 +117,16 @@ public class PlayerController : MonoBehaviour
     }
 
     private float _horizontalSpeed =>
-        (_horizontalInput > 0 ? 1 : _horizontalInput) * // Чтобы нивелировать разницу в скорости между горизонтальным движением и движением под углом
+        (_horizontalInput > 0 ? 1 : _horizontalInput) * // Р§С‚РѕР±С‹ РЅРёРІРµР»РёСЂРѕРІР°С‚СЊ СЂР°Р·РЅРёС†Сѓ РІ СЃРєРѕСЂРѕСЃС‚Рё РјРµР¶РґСѓ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅС‹Рј РґРІРёР¶РµРЅРёРµРј Рё РґРІРёР¶РµРЅРёРµРј РїРѕРґ СѓРіР»РѕРј
         _speed *
-        (_cameraShouldMove ? _cameraMovingSpeedModifier : _cameraStoppedSpeedModifier) * // Когда движется камера, визуально скорость меньше
+        (_cameraShouldMove ? _cameraMovingSpeedModifier : _cameraStoppedSpeedModifier) * // РљРѕРіРґР° РґРІРёР¶РµС‚СЃСЏ РєР°РјРµСЂР°, РІРёР·СѓР°Р»СЊРЅРѕ СЃРєРѕСЂРѕСЃС‚СЊ РјРµРЅСЊС€Рµ
         Time.deltaTime *
         CanMoveHorizontally();
 
     private float _verticalSpeed =>
         _verticalInput *
         _speed *
-        _cameraStoppedSpeedModifier * // Камера никогда не движется по вертикали
+        _cameraStoppedSpeedModifier * // РљР°РјРµСЂР° РЅРёРєРѕРіРґР° РЅРµ РґРІРёР¶РµС‚СЃСЏ РїРѕ РІРµСЂС‚РёРєР°Р»Рё
         Time.deltaTime *
         CanMoveVertically();
 
@@ -132,17 +136,17 @@ public class PlayerController : MonoBehaviour
     {
         if (!_canAct) return;
 
-        float hitBtnPressed = _hit.ReadValue<float>();
-        if (hitBtnPressed == 0)
+        bool hitBtnPressed = Convert.ToBoolean(_hit.ReadValue<float>());
+        if (!hitBtnPressed)
         {
             _canHit = true;
             return;
         }
 
-        if (_canHit && !MoveButtonsPressed && Convert.ToBoolean(hitBtnPressed) && (_timeSinceHit > _hitAnimationTime))
+        if (_canHit && !MoveButtonsPressed && hitBtnPressed && (_timeSinceHit > _hitAnimationTime))
         {
             _animator.SetTrigger("Punch_trig");
-            _playerAudio.PlayOneShot(HitSound);
+            _playerAudio.PlayOneShot(_punchFlySound, _punchFlyVolume);
             _timeSinceHit = 0;
             _canHit = false;
 
