@@ -22,6 +22,10 @@ public class HitboxTrigger : MonoBehaviour
         if (distanceY <= _sameLevelDistanceY) {
             victimAnimator.SetTrigger("GetHurt_trig");
 
+            if (collision.gameObject.name == "Player") {
+                collision.gameObject.GetComponent<PlayerHealthManager>().TakeDamage(10f);
+            }
+
             if (collision.gameObject.tag == "Enemy") {
                 collision.gameObject.GetComponent<EnemyBehaviour>().GetHurt();
             }
