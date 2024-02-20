@@ -27,6 +27,7 @@ public class HitboxTrigger : MonoBehaviour
             }
 
             if (collision.gameObject.tag == "Enemy") {
+                gameObject.GetComponentInParent<PlayerController>().IncreaseScore(50);
                 collision.gameObject.GetComponent<EnemyBehaviour>().GetHurt();
             }
 

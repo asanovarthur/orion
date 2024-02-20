@@ -1,10 +1,16 @@
 using System;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
+    [SerializeField]
+    private TextMeshProUGUI _scoreText;
+
+    private int _score;
+
     private PlayerInputActions _actions;
     private InputAction _move;
     private InputAction _hit;
@@ -36,6 +42,9 @@ public class PlayerController : MonoBehaviour
 
     private Animator _animator;
 
+    private string _scoreGoldColor = "#FFD517";
+    private string _scoreGreyColor = "#767676";
+
     private void Awake()
     {
         _actions = new PlayerInputActions();
@@ -62,13 +71,22 @@ public class PlayerController : MonoBehaviour
         HandleHit();
     }
 
+    public void IncreaseScore(int additionalScore)
+    {
+        _score += additionalScore;
+        // TODO: учесть, что кол-во очков может выйти за рамки пятизначного числа
+        var amountOfZeroes = 5 - _score.ToString().Length;
+        _scoreText.text = $"<color={_scoreGreyColor}>{new String('0', amountOfZeroes)}</color={_scoreGreyColor}><color={_scoreGoldColor}>{_score}</color={_scoreGoldColor}>";
+    }
+
     private void AdjustLookupDirection()
     {
         if (_horizontalInput > 0)
             _scaleX = 1;
         else if (_horizontalInput < 0)
             _scaleX = -1;
-        else _scaleX = transform.localScale.x;
+        else
+            _scaleX = transform.localScale.x;
         transform.localScale = new Vector3(_scaleX, transform.localScale.y, transform.localScale.z);
     }
 
@@ -85,7 +103,8 @@ public class PlayerController : MonoBehaviour
 
     private int CanMoveHorizontally()
     {
-        if (PositionLeftBound > transform.position.x && _horizontalInput < 0) return 0;
+        if (PositionLeftBound > transform.position.x && _horizontalInput < 0)
+            return 0;
 
         return 1;
     }
@@ -94,7 +113,8 @@ public class PlayerController : MonoBehaviour
 
     private void HandleMovement()
     {
-        if (!_canAct) return;
+        if (!_canAct)
+            return;
 
         _horizontalInput = _move.ReadValue<Vector2>().x;
         _verticalInput = _move.ReadValue<Vector2>().y;
@@ -109,32 +129,32 @@ public class PlayerController : MonoBehaviour
             _camera.GetComponent<MoveCamera>().MoveRight();
 
         if (MoveButtonsPressed)
-            transform.Translate(
-                _horizontalSpeed,
-                _verticalSpeed, 
-                transform.position.z
-            );
+            transform.Translate(_horizontalSpeed, _verticalSpeed, transform.position.z);
     }
 
     private float _horizontalSpeed =>
-        (_horizontalInput > 0 ? 1 : _horizontalInput) * // Чтобы нивелировать разницу в скорости между горизонтальным движением и движением под углом
-        _speed *
-        (_cameraShouldMove ? _cameraMovingSpeedModifier : _cameraStoppedSpeedModifier) * // Когда движется камера, визуально скорость меньше
-        Time.deltaTime *
-        CanMoveHorizontally();
+        (_horizontalInput > 0 ? 1 : _horizontalInput)
+        * // Чтобы нивелировать разницу в скорости между горизонтальным движением и движением под углом
+        _speed
+        * (_cameraShouldMove ? _cameraMovingSpeedModifier : _cameraStoppedSpeedModifier)
+        * // Когда движется камера, визуально скорость меньше
+        Time.deltaTime
+        * CanMoveHorizontally();
 
     private float _verticalSpeed =>
-        _verticalInput *
-        _speed *
-        _cameraStoppedSpeedModifier * // Камера никогда не движется по вертикали
-        Time.deltaTime *
-        CanMoveVertically();
+        _verticalInput
+        * _speed
+        * _cameraStoppedSpeedModifier
+        * // Камера никогда не движется по вертикали
+        Time.deltaTime
+        * CanMoveVertically();
 
     private bool MoveButtonsPressed => _horizontalInput != 0 || _verticalInput != 0;
 
     private void HandleHit()
     {
-        if (!_canAct) return;
+        if (!_canAct)
+            return;
 
         bool hitBtnPressed = Convert.ToBoolean(_hit.ReadValue<float>());
         if (!hitBtnPressed)
