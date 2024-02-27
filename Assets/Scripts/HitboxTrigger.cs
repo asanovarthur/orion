@@ -29,6 +29,7 @@ public class HitboxTrigger : MonoBehaviour
             if (collision.gameObject.tag == "Enemy") {
                 gameObject.GetComponentInParent<PlayerController>().IncreaseScore(50);
                 collision.gameObject.GetComponent<EnemyBehaviour>().GetHurt();
+                collision.gameObject.GetComponent<EnemyHealthManager>().TakeDamage(25f);
             }
 
             _attackerAudio = gameObject.GetComponentInParent<AudioSource>();

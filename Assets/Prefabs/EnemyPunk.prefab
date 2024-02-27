@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 2231161979690496887}
   - component: {fileID: 4259326450183703020}
   - component: {fileID: 314007387013383360}
+  - component: {fileID: -3144276228961729183}
   m_Layer: 0
   m_Name: EnemyPunk
   m_TagString: Enemy
@@ -306,6 +307,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PunchFlySound: {fileID: 8300000, guid: d466a738164d35b409010312ec255b9b, type: 3}
   PunchConnectedSound: {fileID: 8300000, guid: 2d0e68a1e3011fc4ba3c141a0226d9a6, type: 3}
+--- !u!114 &-3144276228961729183
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5832318675296185698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7aed84f361927b4ab9ca3c61ecf8fa3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &7220567966111939727
 GameObject:
   m_ObjectHideFlags: 0
