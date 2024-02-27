@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class EnemySpawnManager : MonoBehaviour
 {
+    public GameObject UIObject;
+    public GameObject HealthBar;
+
     private float _spawnDistanceMark = 10f;
     private int _spawnLevel = 1;
 

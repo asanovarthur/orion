@@ -20,6 +20,9 @@ public class EnemyBehaviour : MonoBehaviour
 
     private float _sameLevelDistanceX = 0.3f;
     private float _sameLevelDistanceY = 0.05f;
+
+    // TODO: добавить генерацию рандомного имени
+    private string _name = "Bob";
     
     private bool _canHit = true;
     private bool _shouldPause;
